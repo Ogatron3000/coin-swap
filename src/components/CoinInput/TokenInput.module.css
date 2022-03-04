@@ -1,0 +1,41 @@
+.input {
+    width: 100%;
+    border-radius: 16px;
+    background-color: rgb(238, 234, 244);
+    box-shadow: rgba(74, 74, 104, 0.1) 0px 2px 2px -1px inset;
+    border: none;
+    padding: 16px;
+    text-align: right;
+    color: var(--dark-purple);
+    font-size: 1rem;
+}
+
+.input:focus {
+    outline: none;
+}
+
+.buttons {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.tokenButton {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.tokenButton > svg {
+    color: var(--dark-purple);
+}
+
+.tokenButton:hover {
+    opacity: 0.7;
+}
+
+.copyButton > svg {
+    color: var(--pale-purple);
+}
