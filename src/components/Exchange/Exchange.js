@@ -1,8 +1,49 @@
 import styles from './Exchange.module.css'
 import TokenInput from "../CoinInput/TokenInput";
 import SwapButton from "../SwapButton/SwapButton";
+import {useEffect, useState} from "react";
+import Price from "../Price/Price";
 
 export default function Exchange() {
+    const [coins, setCoins] = useState([])
+    const [baseCoin, setBaseCoin] = useState()
+    const [targetCoin, setTargetCoin] = useState()
+    const [baseAmount, setBaseAmount] = useState(0)
+    const [targetAmount, setTargetAmount] = useState(0)
+    const [orderSwapped, setOrderSwapped] = useState(false)
+
+    useEffect(() => {
+        const symbol = targetCoin?.symbol ?? 'btc'
+        fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${symbol}&order=market_cap_desc&per_page=30&page=1&sparkline=false`)
+            .then(res => res.json())
+            .then(coins => {
+                console.log(coins)
+                setCoins(coins)
+                setBaseCoin(coins[0])
+                setTargetCoin(coins[1])
+            })
+    }, [])
+
+    function handleChange(e) {
+        const pattern = /^[0-9]*[.,]?[0-9]*$/
+        const amount = e.target.value
+        if (pattern.test(amount)) {
+            if (e.target.id === 'base_coin') {
+                setBaseAmount(amount)
+                let convertedAmount = parseFloat((amount / targetCoin.current_price).toFixed(8))
+                setTargetAmount(Math.min(convertedAmount, targetCoin.total_volume))
+            } else {
+                setTargetAmount(amount)
+                let convertedAmount = parseFloat((amount * targetCoin.current_price).toFixed(8))
+                setBaseAmount(Math.min(convertedAmount, baseCoin.total_volume))
+            }
+        }
+    }
+
+    function swap() {
+        setOrderSwapped(!orderSwapped)
+    }
+
     return (
         <div className={styles.wrapper}>
             <div className={styles.exchange}>
@@ -39,26 +80,24 @@ export default function Exchange() {
                 </div>
                 <div className={styles.body}>
                     <div className={styles.row}>
-                        <TokenInput />
+                        <TokenInput
+                            coin={!orderSwapped ? baseCoin : targetCoin}
+                            tokenAmount={!orderSwapped ? baseAmount : targetAmount}
+                            handleChange={handleChange}
+                        />
                     </div>
                     <div className={styles.row}>
-                        <SwapButton />
+                        <SwapButton handleClick={swap} />
                     </div>
                     <div className={styles.row}>
-                        <TokenInput />
+                        <TokenInput
+                            coin={!orderSwapped ? targetCoin : baseCoin}
+                            tokenAmount={!orderSwapped ? targetAmount : baseAmount}
+                            handleChange={handleChange}
+                        />
                     </div>
                     <div className={styles.info}>
-                        <div className={styles.price}>
-                            <span>Price</span>
-                            <div>
-                                <span>61.7705 per BNB</span>
-                                <button>
-                                    <svg viewBox="0 0 24 24" width="14px" color="text" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 6V7.79C12 8.24 12.54 8.46 12.85 8.14L15.64 5.35C15.84 5.15 15.84 4.84 15.64 4.64L12.85 1.85C12.54 1.54 12 1.76 12 2.21V4C7.58 4 4 7.58 4 12C4 13.04 4.2 14.04 4.57 14.95C4.84 15.62 5.7 15.8 6.21 15.29C6.48 15.02 6.59 14.61 6.44 14.25C6.15 13.56 6 12.79 6 12C6 8.69 8.69 6 12 6ZM17.79 8.71C17.52 8.98 17.41 9.4 17.56 9.75C17.84 10.45 18 11.21 18 12C18 15.31 15.31 18 12 18V16.21C12 15.76 11.46 15.54 11.15 15.86L8.36 18.65C8.16 18.85 8.16 19.16 8.36 19.36L11.15 22.15C11.46 22.46 12 22.24 12 21.8V20C16.42 20 20 16.42 20 12C20 10.96 19.8 9.96 19.43 9.05C19.16 8.38 18.3 8.2 17.79 8.71Z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                        {baseAmount > 0 && <Price baseCoin={baseCoin} targetCoin={targetCoin} coinOrderSwapped={orderSwapped} />}
                         <div className={styles.tolerance}>
                             <span>Shipping Tolerance</span>
                             <span>0.5%</span>
