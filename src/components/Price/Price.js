@@ -1,8 +1,11 @@
 import styles from './Price.module.css'
-import {useState} from "react";
+import {useContext, useState} from "react";
+import {CoinsContext} from "../../context/CoinsProvider";
 
-export default function Price({ baseCoin, targetCoin, coinOrderSwapped }) {
-    const [priceOrderSwapped, setPriceOrderSwapped] = useState(coinOrderSwapped)
+export default function Price({ coinOrderSwapped }) {
+    const [priceOrderSwapped, setPriceOrderSwapped] = useState(false)
+
+    const { baseCoin, targetCoin } = useContext(CoinsContext)
 
     let price
     if ((!priceOrderSwapped && !coinOrderSwapped) || (priceOrderSwapped && coinOrderSwapped)) {

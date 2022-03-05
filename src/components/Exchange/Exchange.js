@@ -1,55 +1,54 @@
 import styles from './Exchange.module.css'
 import TokenInput from "../CoinInput/TokenInput";
 import SwapButton from "../SwapButton/SwapButton";
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import Price from "../Price/Price";
+import {CoinsContext} from "../../context/CoinsProvider";
 
 export default function Exchange() {
-    const [coins, setCoins] = useState([])
-    const [baseCoin, setBaseCoin] = useState()
-    const [targetCoin, setTargetCoin] = useState()
-    const [baseAmount, setBaseAmount] = useState('')
-    const [targetAmount, setTargetAmount] = useState('')
     const [orderSwapped, setOrderSwapped] = useState(false)
 
-    useEffect(() => {
-        const symbol = targetCoin?.symbol ?? 'btc'
-        fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${symbol}&order=market_cap_desc&per_page=30&page=1&sparkline=false`)
-            .then(res => res.json())
-            .then(coins => {
-                console.log(coins)
-                setCoins(coins)
-                setBaseCoin(coins[0])
-                setTargetCoin(coins[1])
-            })
-    }, [])
+    const { baseCoin, targetCoin, baseAmount, targetAmount, setCoinData } = useContext(CoinsContext)
 
-    function handleChange(e) {
+    function onInput(e, amountsCalculator) {
         const pattern = /^[0-9]*[.,]?[0-9]*$/
         const amount = e.target.value
         if (pattern.test(amount)) {
-            if (e.target.id === 'base_coin') {
-                setBaseAmount(amount)
-                if (amount > 0 && amount !== '.') {
-                    let convertedAmount = parseFloat((amount / targetCoin.current_price).toFixed(8))
-                    setTargetAmount(Math.min(convertedAmount, targetCoin.total_volume))
-                } else {
-                    setTargetAmount('')
-                }
-            } else {
-                setTargetAmount(amount)
-                if (amount > 0 && amount !== '.') {
-                    let convertedAmount = parseFloat((amount * targetCoin.current_price).toFixed(8))
-                    setBaseAmount(Math.min(convertedAmount, baseCoin.total_volume))
-                } else {
-                    setBaseAmount('')
-                }
-            }
+            const {baseAmount, targetAmount, amountInBaseCoin} = amountsCalculator(amount)
+            setCoinData(prevState => ({...prevState, baseAmount, targetAmount, amountInBaseCoin}))
         }
     }
 
-    function swap() {
-        setOrderSwapped(!orderSwapped)
+    function handleBaseAmountChange(amount) {
+        let baseAmount = amount
+        let targetAmount = ''
+        if (amount > 0 && amount !== '.') {
+            let convertedAmount = parseFloat((amount * baseCoin.current_price / targetCoin.current_price).toFixed(8))
+            targetAmount = Math.min(convertedAmount, targetCoin.total_volume)
+        }
+        return {baseAmount, targetAmount}
+    }
+
+    function handleTargetAmountChange(amount) {
+        let baseAmount = ''
+        let targetAmount = amount
+        if (amount > 0 && amount !== '.') {
+            let convertedAmount = parseFloat((amount / baseCoin.current_price * targetCoin.current_price).toFixed(8))
+            baseAmount = Math.min(convertedAmount, baseCoin.total_volume)
+        }
+        return {baseAmount, targetAmount}
+    }
+
+    const baseInputProps = {
+        coin: baseCoin,
+        amount: baseAmount,
+        handleChange: (e) => onInput(e, handleBaseAmountChange)
+    }
+
+    const targetInputProps = {
+        coin: targetCoin,
+        amount: targetAmount,
+        handleChange: (e) => onInput(e, handleTargetAmountChange)
     }
 
     return (
@@ -89,23 +88,19 @@ export default function Exchange() {
                 <div className={styles.body}>
                     <div className={styles.row}>
                         <TokenInput
-                            coin={!orderSwapped ? baseCoin : targetCoin}
-                            tokenAmount={!orderSwapped ? baseAmount : targetAmount}
-                            handleChange={handleChange}
+                            {...(!orderSwapped ? baseInputProps : targetInputProps)}
                         />
                     </div>
                     <div className={styles.row}>
-                        <SwapButton handleClick={swap} />
+                        <SwapButton handleClick={() => setOrderSwapped(!orderSwapped)} />
                     </div>
                     <div className={styles.row}>
                         <TokenInput
-                            coin={!orderSwapped ? targetCoin : baseCoin}
-                            tokenAmount={!orderSwapped ? targetAmount : baseAmount}
-                            handleChange={handleChange}
+                            {...(!orderSwapped ? targetInputProps : baseInputProps)}
                         />
                     </div>
                     <div className={styles.info}>
-                        {baseAmount > 0 && <Price baseCoin={baseCoin} targetCoin={targetCoin} coinOrderSwapped={orderSwapped} />}
+                        {baseAmount > 0 && <Price coinOrderSwapped={orderSwapped} />}
                         <div className={styles.tolerance}>
                             <span>Shipping Tolerance</span>
                             <span>0.5%</span>

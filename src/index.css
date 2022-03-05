@@ -1,8 +1,9 @@
 :root {
   --dark-purple: rgb(40, 13, 95);
   --purple: rgb(118, 69, 217);
+  --light-purple: rgb(172, 143, 232);
   --pale-purple: rgb(122, 110, 170);
-  --cyan: rgb(31, 199, 212);;
+  --cyan: rgb(31, 199, 212);
 }
 
 html {
@@ -37,6 +38,23 @@ button {
   background: none;
   font-family: inherit;
   color: inherit;
+}
+
+input {
+  font-family: inherit;
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #afa6cb;
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #afa6cb;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: #afa6cb;
 }
 
 svg {

@@ -1,0 +1,115 @@
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--dark-purple);
+    opacity: 0.5;
+    z-index: 2;
+}
+
+.modal {
+    background: white;
+    position: fixed;
+    border-radius: 32px;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 80%;
+    width: 420px;
+    z-index:2;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgb(231, 227, 235);
+}
+
+.h2 {
+    font-size: 1.25rem;
+    color: var(--dark-purple);
+    margin: 0;
+}
+
+.header > button:active {
+    transform: translateY(1px);
+}
+
+.header > button > svg {
+    color: var(--cyan);
+}
+
+.body {
+    padding: 24px;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.search {
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 16px;
+    background-color: rgb(238, 234, 244);
+    box-shadow: rgba(74, 74, 104, 0.1) 0px 2px 2px -1px inset;
+    border: 1px solid rgb(215, 202, 236);
+    padding: 16px;
+    color: var(--dark-purple);
+    font-size: 1rem;
+}
+
+.search:focus {
+    outline: 4px solid var(--light-purple);
+}
+
+.ul {
+    list-style: none;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+    margin: 24px -24px;
+}
+
+.li {
+    padding: 6px 24px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.li:hover {
+    background: rgb(250, 249, 250);
+}
+
+.logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+.coinName {
+    display: flex;
+    flex-direction: column;
+}
+
+.coinName > span:first-child {
+    font-weight: 600;
+}
+
+.coinName > span:last-child {
+    font-size: 0.875rem;
+}
+
+.manageTokens {
+    text-align: center;
+    color: var(--cyan);
+    font-weight: 600;
+}

@@ -1,11 +1,21 @@
 import styles from './TokenInput.module.css'
+import {useState} from "react";
+import CoinsModal from "../CoinsModal/CoinsModal";
 
-export default function TokenInput({ coin, tokenAmount, handleChange }) {
+export default function TokenInput({ coin, amount, handleChange }) {
+    const [open, setOpen] = useState(false)
+
     if (!coin) return null
+
     return (
         <div>
+            <CoinsModal
+                selectedCoinId={coin.id}
+                isOpen={open}
+                onClose={() => setOpen(false)}
+            />
             <div className={styles.buttons}>
-                <button className={styles.tokenButton}>
+                <button className={styles.tokenButton} onClick={() => setOpen(true)}>
                     <img className={styles.logo} src={coin.image} alt={`${coin.name} logo`} />
                     <span>{coin.symbol.toUpperCase()}</span>
                     <svg viewBox="0 0 24 24" color="text" width="20px" xmlns="http://www.w3.org/2000/svg">
@@ -20,8 +30,7 @@ export default function TokenInput({ coin, tokenAmount, handleChange }) {
             </div>
             <input className={styles.input}
                    onChange={handleChange}
-                   value={tokenAmount}
-                   id={coin.current_price === 1 ? 'base_coin' : 'target_coin'}
+                   value={amount}
                    type="text"
                    inputMode='decimal'
                    title='Token Amount'
