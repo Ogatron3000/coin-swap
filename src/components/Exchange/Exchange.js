@@ -8,8 +8,8 @@ export default function Exchange() {
     const [coins, setCoins] = useState([])
     const [baseCoin, setBaseCoin] = useState()
     const [targetCoin, setTargetCoin] = useState()
-    const [baseAmount, setBaseAmount] = useState(0)
-    const [targetAmount, setTargetAmount] = useState(0)
+    const [baseAmount, setBaseAmount] = useState('')
+    const [targetAmount, setTargetAmount] = useState('')
     const [orderSwapped, setOrderSwapped] = useState(false)
 
     useEffect(() => {
@@ -30,12 +30,20 @@ export default function Exchange() {
         if (pattern.test(amount)) {
             if (e.target.id === 'base_coin') {
                 setBaseAmount(amount)
-                let convertedAmount = parseFloat((amount / targetCoin.current_price).toFixed(8))
-                setTargetAmount(Math.min(convertedAmount, targetCoin.total_volume))
+                if (amount > 0 && amount !== '.') {
+                    let convertedAmount = parseFloat((amount / targetCoin.current_price).toFixed(8))
+                    setTargetAmount(Math.min(convertedAmount, targetCoin.total_volume))
+                } else {
+                    setTargetAmount('')
+                }
             } else {
                 setTargetAmount(amount)
-                let convertedAmount = parseFloat((amount * targetCoin.current_price).toFixed(8))
-                setBaseAmount(Math.min(convertedAmount, baseCoin.total_volume))
+                if (amount > 0 && amount !== '.') {
+                    let convertedAmount = parseFloat((amount * targetCoin.current_price).toFixed(8))
+                    setBaseAmount(Math.min(convertedAmount, baseCoin.total_volume))
+                } else {
+                    setBaseAmount('')
+                }
             }
         }
     }

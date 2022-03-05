@@ -20,7 +20,7 @@ export default function TokenInput({ coin, tokenAmount, handleChange }) {
             </div>
             <input className={styles.input}
                    onChange={handleChange}
-                   value={tokenAmount == 0 ? '' : tokenAmount}
+                   value={tokenAmount}
                    id={coin.current_price === 1 ? 'base_coin' : 'target_coin'}
                    type="text"
                    inputMode='decimal'
