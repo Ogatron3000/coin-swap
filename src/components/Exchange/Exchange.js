@@ -1,9 +1,10 @@
 import styles from './Exchange.module.css'
 import TokenInput from "../CoinInput/TokenInput";
 import SwapButton from "../SwapButton/SwapButton";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useState} from "react";
 import Price from "../Price/Price";
 import {CoinsContext} from "../../context/CoinsProvider";
+import {convert} from "../../helpers/convert";
 
 export default function Exchange() {
     const [orderSwapped, setOrderSwapped] = useState(false)
@@ -21,22 +22,14 @@ export default function Exchange() {
 
     function handleBaseAmountChange(amount) {
         let baseAmount = amount
-        let targetAmount = ''
-        if (amount > 0 && amount !== '.') {
-            let convertedAmount = parseFloat((amount * baseCoin.current_price / targetCoin.current_price).toFixed(8))
-            targetAmount = Math.min(convertedAmount, targetCoin.total_volume)
-        }
-        return {baseAmount, targetAmount}
+        let targetAmount = convert(amount, baseCoin, targetCoin)
+        return {baseAmount, targetAmount, amountInBaseCoin: true}
     }
 
     function handleTargetAmountChange(amount) {
-        let baseAmount = ''
+        let baseAmount = convert(amount, targetCoin, baseCoin)
         let targetAmount = amount
-        if (amount > 0 && amount !== '.') {
-            let convertedAmount = parseFloat((amount / baseCoin.current_price * targetCoin.current_price).toFixed(8))
-            baseAmount = Math.min(convertedAmount, baseCoin.total_volume)
-        }
-        return {baseAmount, targetAmount}
+        return {baseAmount, targetAmount, amountInBaseCoin: false}
     }
 
     const baseInputProps = {

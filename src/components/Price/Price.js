@@ -1,6 +1,7 @@
 import styles from './Price.module.css'
 import {useContext, useState} from "react";
 import {CoinsContext} from "../../context/CoinsProvider";
+import {convert} from "../../helpers/convert";
 
 export default function Price({ coinOrderSwapped }) {
     const [priceOrderSwapped, setPriceOrderSwapped] = useState(false)
@@ -11,12 +12,12 @@ export default function Price({ coinOrderSwapped }) {
     if ((!priceOrderSwapped && !coinOrderSwapped) || (priceOrderSwapped && coinOrderSwapped)) {
          price =
             <span>
-                {targetCoin.current_price} {baseCoin.symbol.toUpperCase()} per {targetCoin.symbol.toUpperCase()}
+                {convert(1, targetCoin, baseCoin)} {baseCoin.symbol.toUpperCase()} per {targetCoin.symbol.toUpperCase()}
             </span>
     } else {
         price =
             <span>
-                {(1 / targetCoin.current_price).toFixed(8)} {targetCoin.symbol.toUpperCase()} per {baseCoin.symbol.toUpperCase()}
+                {convert(1, baseCoin, targetCoin)} {targetCoin.symbol.toUpperCase()} per {baseCoin.symbol.toUpperCase()}
             </span>
     }
 
