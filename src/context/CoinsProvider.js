@@ -13,9 +13,10 @@ export default function CoinsProvider({ children }) {
     })
 
     useEffect(() => {
-        fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=btc&order=market_cap_desc&per_page=100&page=1&sparkline=false`)
+        fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=btc&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h,7d,30d,1y`)
             .then(res => res.json())
             .then(coins => {
+                console.log(coins)
                 setCoinData(prevState => ({
                     ...prevState,
                     coins,
