@@ -2,12 +2,14 @@
     background: rgb(231, 227, 235) none repeat scroll 0% 0%;
     border-radius: 24px;
     padding: 1px 1px 3px;
+    min-height: 426px;
 }
 
 .exchange {
     background: white;
     width: 328px;
     border-radius: 24px;
+    height: 100%;
 }
 
 .header {
