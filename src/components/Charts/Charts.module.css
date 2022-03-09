@@ -82,7 +82,6 @@
 .percent {
     text-transform: uppercase;
     font-size: 1.25rem;
-    color: var(--teal);
 }
 
 .time {

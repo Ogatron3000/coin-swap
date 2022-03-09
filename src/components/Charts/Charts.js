@@ -9,6 +9,20 @@ export default function Charts({ isOpen, onClose }) {
     const [days, setDays] = useState(7)
     const [history, setHistory] = useState([])
 
+    const [price, setPrice] = useState()
+    const [time, setTime] = useState()
+
+    function convertToDateFormat(date) {
+        date = new Date(date)
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute:'2-digit',
+        })
+    }
+
     let interval = 'hourly'
     if (days > 1) {
         interval = 'daily'
@@ -19,17 +33,28 @@ export default function Charts({ isOpen, onClose }) {
             .then(res => res.json())
             .then(history => {
                 console.log(history)
+                if (days === 365) {
+                    history.prices = history.prices.filter((_, i) => i % 15 === 0 || i === 365)
+                }
                 setHistory(history.prices.map(([date, price], i) => {
-                    date = new Date(date)
+                    if (i === history.prices.length - 1) {
+                        setPrice(price.toFixed(2))
+                        setTime(convertToDateFormat(date))
+                    }
+                    let tick
+                    if (days === 1) {
+                        tick = new Date(date).toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'})
+                    } else {
+                        tick = new Date(date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})
+                    }
                     return {
-                        time: interval === 'hourly' ?
-                            date.toLocaleTimeString() :
-                            date.toLocaleDateString('en-GB', {day: '2-digit' ,month: 'short'}),
-                        price: price.toFixed(3)
+                        time: convertToDateFormat(date),
+                        price: price.toFixed(2),
+                        tick,
                     }
                 }))
             })
-    }, [])
+    }, [days])
 
     if (!isOpen) return null
 
@@ -58,41 +83,65 @@ export default function Charts({ isOpen, onClose }) {
             </div>
             <div className={styles.main}>
                 <div className={styles.mainInfo}>
-                    <div className={styles.price}>62.42 </div>
+                    <div className={styles.price}>{price}</div>
                     <div className={styles.mainSymbols}>{baseCoin.symbol} / {targetCoin.symbol} </div>
-                    <div className={styles.percent}>+0.967 (1.54%)</div>
+                    <div className={styles.percent} style={{color: history[0].price < history[history.length - 1].price ? 'var(--teal)' : 'var(--red)'}}>
+                        {history[0].price < history[history.length - 1].price ? '+' : null}
+                        {(history[history.length - 1].price - history[0].price).toFixed(2)} ({(history[history.length - 1].price / history[0].price).toFixed(2)}%)
+                    </div>
                 </div>
-                <div className={styles.time}>{new Date().toLocaleString()}</div>
+                <div className={styles.time}>
+                    {time}
+                </div>
                 <div className={styles.tabs}>
-                    <button className={styles.activeTab}>24H</button>
-                    <button>1W</button>
-                    <button>1M</button>
-                    <button>1Y</button>
+                    <button onClick={() => setDays(1)} className={days === 1 ? styles.activeTab : null}>24H</button>
+                    <button onClick={() => setDays(7)} className={days === 7 ? styles.activeTab : null}>1W</button>
+                    <button onClick={() => setDays(30)} className={days === 30 ? styles.activeTab : null}>1M</button>
+                    <button onClick={() => setDays(365)} className={days === 365 ? styles.activeTab : null}>1Y</button>
                 </div>
             </div>
             <div className={styles.chart}>
                 <ResponsiveContainer>
                     <AreaChart
                         data={history}
+                        onMouseMove={({activePayload}) => {
+                            if (activePayload && activePayload[0].payload.price !== price) {
+                                setPrice(activePayload[0].payload.price)
+                                setTime(convertToDateFormat(activePayload[0].payload.time))
+                            }
+                        }}
                     >
                         <defs>
-                            <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#00E7B0" stopOpacity="0.34"/>
-                                <stop offset="100%" stopColor="#0C8B6C" stopOpacity="0"/>
-                            </linearGradient>
+                            {history[0].price < history[history.length - 1].price
+                                ?
+                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#00E7B0" stopOpacity="0.34"/>
+                                    <stop offset="100%" stopColor="#0C8B6C" stopOpacity="0"/>
+                                </linearGradient>
+                                :
+                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#ED4B9E" stopOpacity="0.34"/>
+                                    <stop offset="100%" stopColor="#ED4B9E" stopOpacity="0"/>
+                                </linearGradient>
+                            }
                         </defs>
                         <YAxis hide="hide" domain={['dataMin', 'dataMax']} />
                         <XAxis
-                            dataKey="time"
-                            ticks={history.slice(0, history.length - 1).map(h => h.time)}
+                            dataKey="tick"
                             axisLine={false}
                             tickLine={false}
                             tickCount={7}
                             dy={6}
                             allowDataOverflow={false}
                         />
-                        <Tooltip />
-                        <Area type="linea" dataKey="price" stroke="#31d0aa" strokeWidth="2px" fill="url(#colorUv)" />
+                        <Tooltip content={() => null} />
+                        <Area
+                            type="linear"
+                            dataKey="price"
+                            stroke={history[0].price < history[history.length - 1].price ? 'var(--teal)' : 'var(--red)'}
+                            strokeWidth="2px"
+                            fill="url(#gradient)"
+                        />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
