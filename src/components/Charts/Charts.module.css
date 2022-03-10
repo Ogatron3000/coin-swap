@@ -58,11 +58,13 @@
 
 .main {
     padding-inline: 24px;
+    margin-bottom: 12px;
 }
 
 .mainInfo {
     display: flex;
     align-items: baseline;
+    flex-wrap: wrap;
     font-weight: 600;
     line-height: 1.1;
 }

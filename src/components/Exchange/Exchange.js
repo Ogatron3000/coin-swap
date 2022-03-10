@@ -8,7 +8,6 @@ import {convert} from "../../helpers/convert";
 import Charts from "../Charts/Charts";
 
 export default function Exchange() {
-    const [orderSwapped, setOrderSwapped] = useState(false)
     const [isChartOpen, setIsChartOpen] = useState(false)
 
     const { baseCoin, targetCoin, baseAmount, targetAmount, setCoinData } = useContext(CoinsContext)
@@ -34,16 +33,14 @@ export default function Exchange() {
         return {baseAmount, targetAmount, amountInBaseCoin: false}
     }
 
-    const baseInputProps = {
-        coin: baseCoin,
-        amount: baseAmount,
-        handleChange: (e) => onInput(e, handleBaseAmountChange)
-    }
-
-    const targetInputProps = {
-        coin: targetCoin,
-        amount: targetAmount,
-        handleChange: (e) => onInput(e, handleTargetAmountChange)
+    function swap() {
+        setCoinData(prevState => ({...prevState,
+            baseCoin: prevState.targetCoin,
+            targetCoin: prevState.baseCoin,
+            baseAmount: prevState.targetAmount,
+            targetAmount: prevState.baseAmount,
+            amountInBaseCoin: !prevState.amountInBaseCoin,
+        }))
     }
 
     if (!baseCoin) return null
@@ -94,19 +91,23 @@ export default function Exchange() {
                     <div className={styles.body}>
                         <div className={styles.row}>
                             <TokenInput
-                                {...(!orderSwapped ? baseInputProps : targetInputProps)}
+                                coin={baseCoin}
+                                amount={baseAmount}
+                                handleChange={(e) => onInput(e, handleBaseAmountChange)}
                             />
                         </div>
                         <div className={styles.row}>
-                            <SwapButton handleClick={() => setOrderSwapped(!orderSwapped)} />
+                            <SwapButton handleClick={swap} />
                         </div>
                         <div className={styles.row}>
                             <TokenInput
-                                {...(!orderSwapped ? targetInputProps : baseInputProps)}
+                                coin={targetCoin}
+                                amount={targetAmount}
+                                handleChange={(e) => onInput(e, handleTargetAmountChange)}
                             />
                         </div>
                         <div className={styles.info}>
-                            {baseAmount > 0 && <Price coinOrderSwapped={orderSwapped} />}
+                            {baseAmount > 0 && <Price />}
                             <div className={styles.tolerance}>
                                 <span>Shipping Tolerance</span>
                                 <span>0.5%</span>

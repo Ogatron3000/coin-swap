@@ -1,62 +1,85 @@
 import styles from './Charts.module.css'
 import {useContext, useEffect, useState} from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {CoinsContext} from "../../context/CoinsProvider";
+import convertToDateFormat from "../../helpers/convertToDateFormat";
 
 export default function Charts({ isOpen, onClose }) {
-    const { baseCoin, targetCoin, baseAmount, targetAmount, setCoinData } = useContext(CoinsContext)
+    const { baseCoin, targetCoin } = useContext(CoinsContext)
 
     const [days, setDays] = useState(7)
-    const [history, setHistory] = useState([])
-
-    const [price, setPrice] = useState()
+    const [price, setPrice] = useState(0)
     const [time, setTime] = useState()
-
-    function convertToDateFormat(date) {
-        date = new Date(date)
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute:'2-digit',
-        })
-    }
+    const [swapped, setSwapped] = useState(false)
+    const [ratios, setRatios] = useState([])
 
     let interval = 'hourly'
-    if (days > 1) {
+    if (days > 7) {
         interval = 'daily'
     }
 
     useEffect(() => {
-        fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=eth&days=${days}&interval=${interval}`)
+        fetch(`https://api.coingecko.com/api/v3/coins/${baseCoin.id}/market_chart?vs_currency=btc&days=${days}&interval=${interval}`)
             .then(res => res.json())
-            .then(history => {
-                console.log(history)
-                if (days === 365) {
-                    history.prices = history.prices.filter((_, i) => i % 15 === 0 || i === 365)
-                }
-                setHistory(history.prices.map(([date, price], i) => {
-                    if (i === history.prices.length - 1) {
-                        setPrice(price.toFixed(2))
-                        setTime(convertToDateFormat(date))
-                    }
-                    let tick
-                    if (days === 1) {
-                        tick = new Date(date).toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'})
-                    } else {
-                        tick = new Date(date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})
-                    }
-                    return {
-                        time: convertToDateFormat(date),
-                        price: price.toFixed(2),
-                        tick,
-                    }
-                }))
+            .then(historyBase => {
+                let baseCoinPrices = historyBase.prices.map(price => price[1])
+                fetch(`https://api.coingecko.com/api/v3/coins/${targetCoin.id}/market_chart?vs_currency=btc&days=${days}&interval=${interval}`)
+                    .then(res => res.json())
+                    .then(historyTarget => {
+                        let ratiosArr = historyTarget.prices
+                            .slice(0, baseCoinPrices.length)
+                            .map(([date, price], i) => {
+                                return {
+                                    baseToTarget: (price / baseCoinPrices[i]),
+                                    targetToBase: (baseCoinPrices[i] / price),
+                                    date: convertToDateFormat(date),
+                                }
+                        })
+                        setPrice(!swapped ? ratiosArr[ratiosArr.length - 1].baseToTarget : ratiosArr[ratiosArr.length - 1].targetToBase)
+                        setTime(ratiosArr[ratiosArr.length - 1].date)
+                        if (days === 7) {
+                            ratiosArr = ratiosArr.filter((_, i) => i % 6 === 0 || i === ratiosArr.length - 1)
+                        } else if (days === 365) {
+                            ratiosArr = ratiosArr.filter((_, i) => i % 15 === 0 || i === ratiosArr.length - 1)
+                        }
+                        setRatios(ratiosArr)
+                    })
             })
-    }, [days])
+    }, [days, baseCoin, targetCoin])
+
+    function swap() {
+        setSwapped(!swapped)
+        setPrice(!swapped ? ratios[ratios.length - 1].baseToTarget : ratios[ratios.length - 1].targetToBase)
+    }
 
     if (!isOpen) return null
+
+    let chartData = ratios.map(ratio => {
+        let tick
+        if (days === 1) {
+            tick = new Date(ratio.date).toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'})
+        } else {
+            tick = new Date(ratio.date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})
+        }
+        return {
+            price: swapped ? ratio.baseToTarget : ratio.targetToBase,
+            time: ratio.date,
+            tick,
+        }
+    })
+
+    let base, target, priceDiff, priceDiffPercentage
+    if (swapped) {
+        base = targetCoin
+        target = baseCoin
+        priceDiff = (ratios[ratios.length - 1].baseToTarget - ratios[0].baseToTarget).toFixed(3)
+        priceDiffPercentage = (ratios[ratios.length - 1].baseToTarget / ratios[0].baseToTarget).toFixed(2)
+    } else {
+        base = baseCoin
+        target = targetCoin
+        priceDiff = (ratios[ratios.length - 1].targetToBase - ratios[0].targetToBase).toFixed(3)
+        priceDiffPercentage = (ratios[ratios.length - 1].targetToBase / ratios[0].targetToBase).toFixed(2)
+    }
 
     return (
         <div className={styles.wrapper}>
@@ -64,12 +87,12 @@ export default function Charts({ isOpen, onClose }) {
                 <div className={styles.headerLeft}>
                     <div className={styles.coins}>
                         <div className={styles.logos}>
-                            <img className={styles.logo} src={baseCoin.image} alt={`${baseCoin.name} logo`} />
-                            <img className={styles.logo} src={targetCoin.image} alt={`${targetCoin.name} logo`} />
+                            <img className={styles.logo} src={base.image} alt={`${base.name} logo`} />
+                            <img className={styles.logo} src={target.image} alt={`${target.name} logo`} />
                         </div>
-                        <span className={styles.headerSymbols}>{baseCoin.symbol} / {targetCoin.symbol}</span>
+                        <span className={styles.headerSymbols}>{base.symbol} / {target.symbol}</span>
                     </div>
-                    <button>
+                    <button onClick={swap}>
                         <svg viewBox="0 0 24 25" color="primary" width="20px" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
                             <path fillRule="evenodd" clipRule="evenodd" d="M18.86 4.86003L21.65 7.65003C21.84 7.84003 21.84 8.16003 21.64 8.35003L18.85 11.14C18.54 11.46 18 11.24 18 10.79V9.00003H4C3.45 9.00003 3 8.55003 3 8.00003C3 7.45003 3.45 7.00003 4 7.00003H18V5.21003C18 4.76003 18.54 4.54003 18.86 4.86003ZM5.14001 19.14L2.35001 16.35C2.16001 16.16 2.16001 15.84 2.36001 15.65L5.15001 12.86C5.46001 12.54 6.00001 12.76 6.00001 13.21V15H20C20.55 15 21 15.45 21 16C21 16.55 20.55 17 20 17H6.00001V18.79C6.00001 19.24 5.46001 19.46 5.14001 19.14Z"/>
                         </svg>
@@ -83,11 +106,12 @@ export default function Charts({ isOpen, onClose }) {
             </div>
             <div className={styles.main}>
                 <div className={styles.mainInfo}>
-                    <div className={styles.price}>{price}</div>
-                    <div className={styles.mainSymbols}>{baseCoin.symbol} / {targetCoin.symbol} </div>
-                    <div className={styles.percent} style={{color: history[0].price < history[history.length - 1].price ? 'var(--teal)' : 'var(--red)'}}>
-                        {history[0].price < history[history.length - 1].price ? '+' : null}
-                        {(history[history.length - 1].price - history[0].price).toFixed(2)} ({(history[history.length - 1].price / history[0].price).toFixed(2)}%)
+                    <div className={styles.price}>{price < 0.001 ? '<' : null}{(Math.max(price, 0.001)).toFixed(3)}</div>
+                    <div className={styles.mainSymbols}>{base.symbol} / {target.symbol} </div>
+                    <div className={styles.percent} style={{color: priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}}>
+                        {priceDiff > 0 ? '+' : null}
+                        {priceDiff < 0.001 ? '<' : null}
+                        {Math.max(priceDiff, 0.001)} ({priceDiffPercentage}%)
                     </div>
                 </div>
                 <div className={styles.time}>
@@ -103,29 +127,21 @@ export default function Charts({ isOpen, onClose }) {
             <div className={styles.chart}>
                 <ResponsiveContainer>
                     <AreaChart
-                        data={history}
+                        data={chartData}
                         onMouseMove={({activePayload}) => {
                             if (activePayload && activePayload[0].payload.price !== price) {
-                                setPrice(activePayload[0].payload.price)
+                                setPrice(activePayload[0].payload.price.toFixed(3))
                                 setTime(convertToDateFormat(activePayload[0].payload.time))
                             }
                         }}
                     >
                         <defs>
-                            {history[0].price < history[history.length - 1].price
-                                ?
-                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00E7B0" stopOpacity="0.34"/>
-                                    <stop offset="100%" stopColor="#0C8B6C" stopOpacity="0"/>
-                                </linearGradient>
-                                :
-                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#ED4B9E" stopOpacity="0.34"/>
-                                    <stop offset="100%" stopColor="#ED4B9E" stopOpacity="0"/>
-                                </linearGradient>
-                            }
+                            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'} stopOpacity="0.34"/>
+                                <stop offset="100%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'} stopOpacity="0"/>
+                            </linearGradient>
                         </defs>
-                        <YAxis hide="hide" domain={['dataMin', 'dataMax']} />
+                        <YAxis hide={true} domain={['dataMin', 'dataMax']} />
                         <XAxis
                             dataKey="tick"
                             axisLine={false}
@@ -138,7 +154,7 @@ export default function Charts({ isOpen, onClose }) {
                         <Area
                             type="linear"
                             dataKey="price"
-                            stroke={history[0].price < history[history.length - 1].price ? 'var(--teal)' : 'var(--red)'}
+                            stroke={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
                             strokeWidth="2px"
                             fill="url(#gradient)"
                         />
