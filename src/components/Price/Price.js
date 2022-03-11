@@ -3,13 +3,13 @@ import {useContext, useState} from "react";
 import {CoinsContext} from "../../context/CoinsProvider";
 import {convert} from "../../helpers/convert";
 
-export default function Price({ coinOrderSwapped }) {
+export default function Price() {
     const [priceOrderSwapped, setPriceOrderSwapped] = useState(false)
 
     const { baseCoin, targetCoin } = useContext(CoinsContext)
 
     let price
-    if ((!priceOrderSwapped && !coinOrderSwapped) || (priceOrderSwapped && coinOrderSwapped)) {
+    if (!priceOrderSwapped) {
          price =
             <span>
                 {convert(1, targetCoin, baseCoin)} {baseCoin.symbol.toUpperCase()} per {targetCoin.symbol.toUpperCase()}
