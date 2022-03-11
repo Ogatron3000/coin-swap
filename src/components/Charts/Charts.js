@@ -35,7 +35,7 @@ export default function Charts({ isOpen, onClose }) {
                                     date: convertToDateFormat(date),
                                 }
                         })
-                        setPrice(!swapped ? ratiosArr[ratiosArr.length - 1].baseToTarget : ratiosArr[ratiosArr.length - 1].targetToBase)
+                        setPrice(!swapped ? ratiosArr[ratiosArr.length - 1].targetToBase : ratiosArr[ratiosArr.length - 1].baseToTarget)
                         setTime(ratiosArr[ratiosArr.length - 1].date)
                         if (days === 7) {
                             ratiosArr = ratiosArr.filter((_, i) => i % 6 === 0 || i === ratiosArr.length - 1)
