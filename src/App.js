@@ -5,9 +5,11 @@ import CoinsProvider from "./context/CoinsProvider";
 function App() {
     return (
         <div className={styles.wrapper}>
-            <h1>CoinSwap</h1>
+            <h1 className={styles.h1}>CoinSwap</h1>
             <CoinsProvider>
-                <Exchange/>
+                <div className={styles.exchange}>
+                    <Exchange/>
+                </div>
             </CoinsProvider>
         </div>
     );

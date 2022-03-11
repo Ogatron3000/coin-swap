@@ -22,15 +22,13 @@ body {
   margin: 0;
   height: 100%;
   color: var(--dark-purple);
-  background: rgba(0, 0, 0, 0) linear-gradient(139.73deg, rgb(229, 253, 255) 0%, rgb(243, 239, 255) 100%) repeat scroll 0% 0%;
   font-family: 'Kanit', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+#root {
+  height: 100%
 }
 
 button {

@@ -46,7 +46,8 @@ export default function Exchange() {
     if (!baseCoin) return null
 
     return (
-        <div style={{ display: 'flex', alignItems: 'stretch', flexDirection: 'row-reverse'}}>
+        <>
+            <Charts isOpen={isChartOpen} onClose={() => setIsChartOpen(!isChartOpen)} />
 
             <div className={styles.wrapper}>
                 <div className={styles.exchange}>
@@ -116,8 +117,6 @@ export default function Exchange() {
                     </div>
                 </div>
             </div>
-
-            <Charts isOpen={isChartOpen} onClose={() => setIsChartOpen(!isChartOpen)} />
-        </div>
+        </>
     )
 }
