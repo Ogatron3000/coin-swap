@@ -1,13 +1,12 @@
-import styles from './Charts.module.css'
+import styles from './ChartWindow.module.css'
 import {useContext, useEffect, useState} from "react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {CoinsContext} from "../../context/CoinsProvider";
-import convertToDateFormat from "../../helpers/convertToDateFormat";
 import {getRatios} from "../../services/coins";
-import Spinner from "../Spinner/Spinner";
 import {useQuery} from "react-query";
+import Chart from "../Chart/Chart";
+import ChartMainInfo from "../ChartMainInfo/ChartMainInfo";
 
-export default function Charts({ isOpen, onClose }) {
+export default function ChartWindow({ isOpen, onClose }) {
     const [days, setDays] = useState(7)
     const [price, setPrice] = useState(0)
     const [time, setTime] = useState('')
@@ -48,25 +47,24 @@ export default function Charts({ isOpen, onClose }) {
         }
     }, [ratiosArr])
 
+    if (!isOpen) return null
+
     function swap() {
         setSwapped(!swapped)
         setChartData(chartData.map((data, i) => ({...data, price: !swapped ? ratios[i].baseToTarget : ratios[i].targetToBase})))
         setPrice(!swapped ? ratios[ratios.length - 1].baseToTarget : ratios[ratios.length - 1].targetToBase)
     }
 
-    if (!isOpen) return null
+    let priceDiff = (chartData[chartData.length - 1].price - chartData[0].price).toFixed(3)
+    let priceDiffPercentage = (chartData[chartData.length - 1].price / chartData[0].price).toFixed(2)
 
-    let base, target, priceDiff, priceDiffPercentage
+    let base, target
     if (swapped) {
         base = targetCoin
         target = baseCoin
-        priceDiff = (ratios[ratios.length - 1].baseToTarget - ratios[0].baseToTarget).toFixed(3)
-        priceDiffPercentage = (ratios[ratios.length - 1].baseToTarget / ratios[0].baseToTarget).toFixed(2)
     } else {
         base = baseCoin
         target = targetCoin
-        priceDiff = (ratios[ratios.length - 1].targetToBase - ratios[0].targetToBase).toFixed(3)
-        priceDiffPercentage = (ratios[ratios.length - 1].targetToBase / ratios[0].targetToBase).toFixed(2)
     }
 
     return (
@@ -78,7 +76,9 @@ export default function Charts({ isOpen, onClose }) {
                             <img className={styles.logo} src={base.image} alt={`${base.name} logo`} />
                             <img className={styles.logo} src={target.image} alt={`${target.name} logo`} />
                         </div>
-                        <span className={styles.headerSymbols}>{base.symbol} / {target.symbol}</span>
+                        <span className={styles.headerSymbols}>
+                            {base.symbol} / {target.symbol}
+                        </span>
                     </div>
                     <button onClick={swap}>
                         <svg viewBox="0 0 24 25" color="primary" width="20px" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
@@ -93,19 +93,7 @@ export default function Charts({ isOpen, onClose }) {
                 </button>
             </div>
             <div className={styles.main}>
-                {isLoading ?
-                    <div className={styles.mainInfoPlaceholder} />
-                    :
-                    <div className={styles.mainInfo}>
-                        <div className={styles.price}>{price < 0.001 ? '<' : null}{(Math.max(price, 0.001)).toFixed(3)}</div>
-                        <div className={styles.mainSymbols}>{base.symbol} / {target.symbol} </div>
-                        <div className={styles.percent} style={{color: priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}}>
-                            {priceDiff > 0 ? '+' : null}
-                            {priceDiff < 0.001 ? '<' : null}
-                            {Math.max(priceDiff, 0.001)} ({priceDiffPercentage}%)
-                        </div>
-                    </div>
-                }
+                <ChartMainInfo {...{isLoading, price, priceDiff, priceDiffPercentage, base, target}} />
                 <div className={styles.time}>
                     {time}
                 </div>
@@ -117,51 +105,7 @@ export default function Charts({ isOpen, onClose }) {
                 </div>
             </div>
             <div className={styles.chart}>
-                {isLoading ?
-                    <Spinner />
-                    :
-                    <ResponsiveContainer>
-                        <AreaChart
-                            data={chartData}
-                            onMouseMove={({activePayload}) => {
-                                if (activePayload && activePayload[0].payload.price !== price) {
-                                    setPrice(activePayload[0].payload.price.toFixed(3))
-                                    setTime(convertToDateFormat(activePayload[0].payload.time))
-                                }
-                            }}
-                            onMouseLeave={() => {
-                                setPrice(!swapped ? ratios[ratios.length - 1].targetToBase : ratios[ratios.length - 1].baseToTarget)
-                                setTime(ratios[ratios.length - 1].date)
-                            }}
-                        >
-                            <defs>
-                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
-                                          stopOpacity="0.34"/>
-                                    <stop offset="100%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
-                                          stopOpacity="0"/>
-                                </linearGradient>
-                            </defs>
-                            <YAxis hide={true} domain={['dataMin', 'dataMax']}/>
-                            <XAxis
-                                dataKey="tick"
-                                axisLine={false}
-                                tickLine={false}
-                                tickCount={7}
-                                dy={6}
-                                allowDataOverflow={false}
-                            />
-                            <Tooltip content={() => null}/>
-                            <Area
-                                type="linear"
-                                dataKey="price"
-                                stroke={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
-                                strokeWidth="2px"
-                                fill="url(#gradient)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                }
+                <Chart {...{chartData, isLoading, setPrice, setTime, priceDiff}} />
             </div>
         </div>
     )

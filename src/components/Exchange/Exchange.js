@@ -5,7 +5,7 @@ import {useContext, useState} from "react";
 import Price from "../Price/Price";
 import {CoinsContext} from "../../context/CoinsProvider";
 import {convert} from "../../helpers/convert";
-import Charts from "../Charts/Charts";
+import Charts from "../ChartWindow/ChartWindow";
 import Spinner from "../Spinner/Spinner";
 
 export default function Exchange() {

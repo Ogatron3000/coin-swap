@@ -1,0 +1,41 @@
+.mainInfoPlaceholder {
+    width: 150px;
+    height: 35px;
+    background: rgb(233, 234, 235);
+    border-radius: 4px;
+    animation: opacity 1s ease-in-out infinite;
+}
+
+@keyframes opacity {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.5;
+    }
+}
+
+.mainInfo {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.price {
+    font-size: 2rem;
+    margin-right: 6px;
+}
+
+.mainSymbols {
+    text-transform: uppercase;
+    font-size: 1.25rem;
+    color: var(--pale-purple);
+    margin-right: 6px;
+}
+
+.percent {
+    text-transform: uppercase;
+    font-size: 1.25rem;
+}
