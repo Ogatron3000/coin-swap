@@ -1,5 +1,5 @@
 import styles from "./ExchangeWindow.module.css";
-import TokenInput from "../CoinInput/TokenInput";
+import CoinInput from "../CoinInput/CoinInput";
 import SwapButton from "../SwapButton/SwapButton";
 import Price from "../Price/Price";
 import {useContext} from "react";
@@ -62,7 +62,7 @@ export default function ExchangeWindow({ isChartWindowOpen, toggleChartWindow })
                 </div>
                 <div className={styles.body}>
                     <div className={styles.row}>
-                        <TokenInput
+                        <CoinInput
                             coin={baseCoin}
                             amount={baseAmount}
                             handleChange={(e) => onInput(e, true)}
@@ -72,7 +72,7 @@ export default function ExchangeWindow({ isChartWindowOpen, toggleChartWindow })
                         <SwapButton />
                     </div>
                     <div className={styles.row}>
-                        <TokenInput
+                        <CoinInput
                             coin={targetCoin}
                             amount={targetAmount}
                             handleChange={(e) => onInput(e, false)}

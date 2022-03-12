@@ -1,8 +1,8 @@
-import styles from './TokenInput.module.css'
+import styles from './CoinInput.module.css'
 import {useState} from "react";
 import CoinsModal from "../CoinsModal/CoinsModal";
 
-export default function TokenInput({ coin, amount, handleChange }) {
+export default function CoinInput({ coin, amount, handleChange }) {
     const [open, setOpen] = useState(false)
 
     if (!coin) return null

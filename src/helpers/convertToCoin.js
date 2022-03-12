@@ -1,4 +1,4 @@
-export function convert(amount, baseCoin, targetCoin) {
+export function convertCoin(amount, baseCoin, targetCoin) {
     if (amount == 0 || amount == '.') {
         return ''
     }

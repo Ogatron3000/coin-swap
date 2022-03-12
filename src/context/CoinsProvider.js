@@ -1,6 +1,6 @@
 import {createContext, useEffect, useState} from "react";
 import {getCoins} from "../services/coins";
-import {convert} from "../helpers/convert";
+import {convertCoin} from "../helpers/convertToCoin";
 
 export const CoinsContext = createContext()
 
@@ -24,9 +24,9 @@ export default function CoinsProvider({ children }) {
     let baseAmount, targetAmount
     if (amountInBaseCoin) {
         baseAmount = amount
-        targetAmount = convert(amount, baseCoin, targetCoin)
+        targetAmount = convertCoin(amount, baseCoin, targetCoin)
     } else {
-        baseAmount = convert(amount, targetCoin, baseCoin)
+        baseAmount = convertCoin(amount, targetCoin, baseCoin)
         targetAmount = amount
     }
 
