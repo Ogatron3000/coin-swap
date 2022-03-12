@@ -9,8 +9,6 @@ export default function SwapButton() {
         setCoinData(prevState => ({...prevState,
             baseCoin: prevState.targetCoin,
             targetCoin: prevState.baseCoin,
-            baseAmount: prevState.targetAmount,
-            targetAmount: prevState.baseAmount,
             amountInBaseCoin: !prevState.amountInBaseCoin,
         }))
     }

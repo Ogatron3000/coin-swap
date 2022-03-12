@@ -2,32 +2,17 @@ import styles from './CoinsModal.module.css'
 import ReactDom from 'react-dom'
 import {useContext, useState} from "react";
 import {CoinsContext} from "../../context/CoinsProvider";
-import {convert} from "../../helpers/convert";
 
 export default function CoinsModal({ isOpen, onClose, selectedCoinId }) {
     const [searchQuery, setSearchQuery] = useState('')
 
-    const { coins, baseCoin, targetCoin, setCoinData, baseAmount, targetAmount, amountInBaseCoin } = useContext(CoinsContext)
+    const { coins, baseCoin, targetCoin, setCoinData } = useContext(CoinsContext)
 
     function changeCoin(newCoin) {
-        let baseCoinSelected = selectedCoinId === baseCoin.id
-        let newAmount
-        switch (true) {
-            case (baseCoinSelected && amountInBaseCoin):
-                newAmount = convert(baseAmount, newCoin, targetCoin)
-                setCoinData(prevState => ({...prevState, baseCoin: newCoin, targetAmount: newAmount}))
-                break
-            case (baseCoinSelected && !amountInBaseCoin):
-                newAmount = convert(targetAmount, targetCoin, newCoin)
-                setCoinData(prevState => ({...prevState, baseCoin: newCoin, baseAmount: newAmount}))
-                break
-            case (!baseCoinSelected && amountInBaseCoin):
-                newAmount = convert(baseAmount, baseCoin, newCoin)
-                setCoinData(prevState => ({...prevState, targetCoin: newCoin, targetAmount: newAmount}))
-                break
-            default:
-                newAmount = convert(targetAmount, newCoin, baseCoin)
-                setCoinData(prevState => ({...prevState, targetCoin: newCoin, baseAmount: newAmount}))
+        if (selectedCoinId === baseCoin.id) {
+            setCoinData(prevState => ({...prevState, baseCoin: newCoin}))
+        } else {
+            setCoinData(prevState => ({...prevState, targetCoin: newCoin}))
         }
     }
 

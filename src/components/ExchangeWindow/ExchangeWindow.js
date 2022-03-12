@@ -4,31 +4,17 @@ import SwapButton from "../SwapButton/SwapButton";
 import Price from "../Price/Price";
 import {useContext} from "react";
 import {CoinsContext} from "../../context/CoinsProvider";
-import {convert} from "../../helpers/convert";
 import Spinner from "../Spinner/Spinner";
 
 export default function ExchangeWindow({ isChartWindowOpen, toggleChartWindow }) {
     const { baseCoin, targetCoin, baseAmount, targetAmount, setCoinData } = useContext(CoinsContext)
 
-    function onInput(e, amountsCalculator) {
+    function onInput(e, amountInBaseCoin) {
         const pattern = /^[0-9]*[.,]?[0-9]*$/
         const amount = e.target.value
         if (pattern.test(amount)) {
-            const {baseAmount, targetAmount, amountInBaseCoin} = amountsCalculator(amount)
-            setCoinData(prevState => ({...prevState, baseAmount, targetAmount, amountInBaseCoin}))
+            setCoinData(prevState => ({...prevState, amount, amountInBaseCoin}))
         }
-    }
-
-    function handleBaseAmountChange(amount) {
-        let baseAmount = amount
-        let targetAmount = convert(amount, baseCoin, targetCoin)
-        return {baseAmount, targetAmount, amountInBaseCoin: true}
-    }
-
-    function handleTargetAmountChange(amount) {
-        let baseAmount = convert(amount, targetCoin, baseCoin)
-        let targetAmount = amount
-        return {baseAmount, targetAmount, amountInBaseCoin: false}
     }
 
     if (!baseCoin) return <Spinner />
@@ -79,7 +65,7 @@ export default function ExchangeWindow({ isChartWindowOpen, toggleChartWindow })
                         <TokenInput
                             coin={baseCoin}
                             amount={baseAmount}
-                            handleChange={(e) => onInput(e, handleBaseAmountChange)}
+                            handleChange={(e) => onInput(e, true)}
                         />
                     </div>
                     <div className={styles.row}>
@@ -89,7 +75,7 @@ export default function ExchangeWindow({ isChartWindowOpen, toggleChartWindow })
                         <TokenInput
                             coin={targetCoin}
                             amount={targetAmount}
-                            handleChange={(e) => onInput(e, handleTargetAmountChange)}
+                            handleChange={(e) => onInput(e, false)}
                         />
                     </div>
                     <div className={styles.info}>
