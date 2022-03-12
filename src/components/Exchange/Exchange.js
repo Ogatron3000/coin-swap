@@ -6,6 +6,7 @@ import Price from "../Price/Price";
 import {CoinsContext} from "../../context/CoinsProvider";
 import {convert} from "../../helpers/convert";
 import Charts from "../Charts/Charts";
+import Spinner from "../Spinner/Spinner";
 
 export default function Exchange() {
     const [isChartOpen, setIsChartOpen] = useState(false)
@@ -33,7 +34,7 @@ export default function Exchange() {
         return {baseAmount, targetAmount, amountInBaseCoin: false}
     }
 
-    if (!baseCoin) return null
+    if (!baseCoin) return <Spinner />
 
     return (
         <>

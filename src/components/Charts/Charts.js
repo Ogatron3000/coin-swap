@@ -3,70 +3,58 @@ import {useContext, useEffect, useState} from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {CoinsContext} from "../../context/CoinsProvider";
 import convertToDateFormat from "../../helpers/convertToDateFormat";
+import {getRatios} from "../../services/coins";
+import Spinner from "../Spinner/Spinner";
+import {useQuery} from "react-query";
 
 export default function Charts({ isOpen, onClose }) {
-    const { baseCoin, targetCoin } = useContext(CoinsContext)
-
     const [days, setDays] = useState(7)
     const [price, setPrice] = useState(0)
-    const [time, setTime] = useState()
+    const [time, setTime] = useState('')
     const [swapped, setSwapped] = useState(false)
     const [ratios, setRatios] = useState([])
+    const [chartData, setChartData] = useState([])
 
-    let interval = 'hourly'
-    if (days > 7) {
-        interval = 'daily'
-    }
+    const { baseCoin, targetCoin } = useContext(CoinsContext)
+
+    let interval = days > 7 ? 'daily' : 'hourly'
+    const {isLoading, data: ratiosArr} = useQuery(
+        ['getRatios', baseCoin.id, targetCoin.id, days, interval],
+        () => getRatios(baseCoin.id, targetCoin.id, days, interval),
+        {refetchOnWindowFocus: false}
+    )
 
     useEffect(() => {
-        fetch(`https://api.coingecko.com/api/v3/coins/${baseCoin.id}/market_chart?vs_currency=btc&days=${days}&interval=${interval}`)
-            .then(res => res.json())
-            .then(historyBase => {
-                let baseCoinPrices = historyBase.prices.map(price => price[1])
-                fetch(`https://api.coingecko.com/api/v3/coins/${targetCoin.id}/market_chart?vs_currency=btc&days=${days}&interval=${interval}`)
-                    .then(res => res.json())
-                    .then(historyTarget => {
-                        let ratiosArr = historyTarget.prices
-                            .slice(0, baseCoinPrices.length)
-                            .map(([date, price], i) => {
-                                return {
-                                    baseToTarget: (price / baseCoinPrices[i]),
-                                    targetToBase: (baseCoinPrices[i] / price),
-                                    date: convertToDateFormat(date),
-                                }
-                        })
-                        setPrice(!swapped ? ratiosArr[ratiosArr.length - 1].targetToBase : ratiosArr[ratiosArr.length - 1].baseToTarget)
-                        setTime(ratiosArr[ratiosArr.length - 1].date)
-                        if (days === 7) {
-                            ratiosArr = ratiosArr.filter((_, i) => i % 6 === 0 || i === ratiosArr.length - 1)
-                        } else if (days === 365) {
-                            ratiosArr = ratiosArr.filter((_, i) => i % 15 === 0 || i === ratiosArr.length - 1)
+        if (ratiosArr) {
+            setPrice(!swapped ? ratiosArr[ratiosArr.length - 1].targetToBase : ratiosArr[ratiosArr.length - 1].baseToTarget)
+            setTime(ratiosArr[ratiosArr.length - 1].date)
+            setRatios(ratiosArr)
+            // calculating chart data outside of state removes recharts animations
+            setChartData(
+                ratiosArr.map(ratio => {
+                        let tick
+                        if (days === 1) {
+                            tick = new Date(ratio.date).toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'})
+                        } else {
+                            tick = new Date(ratio.date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})
                         }
-                        setRatios(ratiosArr)
-                    })
-            })
-    }, [days, baseCoin, targetCoin])
+                        return {
+                            price: swapped ? ratio.baseToTarget : ratio.targetToBase,
+                            time: ratio.date,
+                            tick,
+                        }
+                })
+            )
+        }
+    }, [ratiosArr])
 
     function swap() {
         setSwapped(!swapped)
+        setChartData(chartData.map((data, i) => ({...data, price: !swapped ? ratios[i].baseToTarget : ratios[i].targetToBase})))
         setPrice(!swapped ? ratios[ratios.length - 1].baseToTarget : ratios[ratios.length - 1].targetToBase)
     }
 
     if (!isOpen) return null
-
-    let chartData = ratios.map(ratio => {
-        let tick
-        if (days === 1) {
-            tick = new Date(ratio.date).toLocaleTimeString('en-US', {hour: 'numeric', minute: 'numeric'})
-        } else {
-            tick = new Date(ratio.date).toLocaleDateString('en-US', {day: '2-digit', month: 'short'})
-        }
-        return {
-            price: swapped ? ratio.baseToTarget : ratio.targetToBase,
-            time: ratio.date,
-            tick,
-        }
-    })
 
     let base, target, priceDiff, priceDiffPercentage
     if (swapped) {
@@ -105,15 +93,19 @@ export default function Charts({ isOpen, onClose }) {
                 </button>
             </div>
             <div className={styles.main}>
-                <div className={styles.mainInfo}>
-                    <div className={styles.price}>{price < 0.001 ? '<' : null}{(Math.max(price, 0.001)).toFixed(3)}</div>
-                    <div className={styles.mainSymbols}>{base.symbol} / {target.symbol} </div>
-                    <div className={styles.percent} style={{color: priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}}>
-                        {priceDiff > 0 ? '+' : null}
-                        {priceDiff < 0.001 ? '<' : null}
-                        {Math.max(priceDiff, 0.001)} ({priceDiffPercentage}%)
+                {isLoading ?
+                    <div className={styles.mainInfoPlaceholder} />
+                    :
+                    <div className={styles.mainInfo}>
+                        <div className={styles.price}>{price < 0.001 ? '<' : null}{(Math.max(price, 0.001)).toFixed(3)}</div>
+                        <div className={styles.mainSymbols}>{base.symbol} / {target.symbol} </div>
+                        <div className={styles.percent} style={{color: priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}}>
+                            {priceDiff > 0 ? '+' : null}
+                            {priceDiff < 0.001 ? '<' : null}
+                            {Math.max(priceDiff, 0.001)} ({priceDiffPercentage}%)
+                        </div>
                     </div>
-                </div>
+                }
                 <div className={styles.time}>
                     {time}
                 </div>
@@ -125,41 +117,51 @@ export default function Charts({ isOpen, onClose }) {
                 </div>
             </div>
             <div className={styles.chart}>
-                <ResponsiveContainer>
-                    <AreaChart
-                        data={chartData}
-                        onMouseMove={({activePayload}) => {
-                            if (activePayload && activePayload[0].payload.price !== price) {
-                                setPrice(activePayload[0].payload.price.toFixed(3))
-                                setTime(convertToDateFormat(activePayload[0].payload.time))
-                            }
-                        }}
-                    >
-                        <defs>
-                            <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'} stopOpacity="0.34"/>
-                                <stop offset="100%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'} stopOpacity="0"/>
-                            </linearGradient>
-                        </defs>
-                        <YAxis hide={true} domain={['dataMin', 'dataMax']} />
-                        <XAxis
-                            dataKey="tick"
-                            axisLine={false}
-                            tickLine={false}
-                            tickCount={7}
-                            dy={6}
-                            allowDataOverflow={false}
-                        />
-                        <Tooltip content={() => null} />
-                        <Area
-                            type="linear"
-                            dataKey="price"
-                            stroke={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
-                            strokeWidth="2px"
-                            fill="url(#gradient)"
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
+                {isLoading ?
+                    <Spinner />
+                    :
+                    <ResponsiveContainer>
+                        <AreaChart
+                            data={chartData}
+                            onMouseMove={({activePayload}) => {
+                                if (activePayload && activePayload[0].payload.price !== price) {
+                                    setPrice(activePayload[0].payload.price.toFixed(3))
+                                    setTime(convertToDateFormat(activePayload[0].payload.time))
+                                }
+                            }}
+                            onMouseLeave={() => {
+                                setPrice(!swapped ? ratios[ratios.length - 1].targetToBase : ratios[ratios.length - 1].baseToTarget)
+                                setTime(ratios[ratios.length - 1].date)
+                            }}
+                        >
+                            <defs>
+                                <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
+                                          stopOpacity="0.34"/>
+                                    <stop offset="100%" stopColor={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
+                                          stopOpacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <YAxis hide={true} domain={['dataMin', 'dataMax']}/>
+                            <XAxis
+                                dataKey="tick"
+                                axisLine={false}
+                                tickLine={false}
+                                tickCount={7}
+                                dy={6}
+                                allowDataOverflow={false}
+                            />
+                            <Tooltip content={() => null}/>
+                            <Area
+                                type="linear"
+                                dataKey="price"
+                                stroke={priceDiff > 0 ? 'var(--teal)' : 'var(--red)'}
+                                strokeWidth="2px"
+                                fill="url(#gradient)"
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                }
             </div>
         </div>
     )
