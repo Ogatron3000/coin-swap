@@ -1,6 +1,20 @@
 import styles from "./SwapButton.module.css";
+import {useContext} from "react";
+import {CoinsContext} from "../../context/CoinsProvider";
 
-export default function SwapButton({ handleClick }) {
+export default function SwapButton() {
+    const { setCoinData } = useContext(CoinsContext)
+
+    function handleClick() {
+        setCoinData(prevState => ({...prevState,
+            baseCoin: prevState.targetCoin,
+            targetCoin: prevState.baseCoin,
+            baseAmount: prevState.targetAmount,
+            targetAmount: prevState.baseAmount,
+            amountInBaseCoin: !prevState.amountInBaseCoin,
+        }))
+    }
+
     return (
         <button className={styles.button} onClick={handleClick}>
             <svg viewBox="0 0 24 24" color="primary" width="20px" xmlns="http://www.w3.org/2000/svg" fill='currentColor'>

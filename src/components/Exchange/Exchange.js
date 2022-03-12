@@ -33,16 +33,6 @@ export default function Exchange() {
         return {baseAmount, targetAmount, amountInBaseCoin: false}
     }
 
-    function swap() {
-        setCoinData(prevState => ({...prevState,
-            baseCoin: prevState.targetCoin,
-            targetCoin: prevState.baseCoin,
-            baseAmount: prevState.targetAmount,
-            targetAmount: prevState.baseAmount,
-            amountInBaseCoin: !prevState.amountInBaseCoin,
-        }))
-    }
-
     if (!baseCoin) return null
 
     return (
@@ -98,7 +88,7 @@ export default function Exchange() {
                             />
                         </div>
                         <div className={styles.row}>
-                            <SwapButton handleClick={swap} />
+                            <SwapButton />
                         </div>
                         <div className={styles.row}>
                             <TokenInput
