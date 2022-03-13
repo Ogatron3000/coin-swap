@@ -1,6 +1,6 @@
 import {createContext, useEffect, useState} from "react";
 import {getCoins} from "../services/coins";
-import {convertCoin} from "../helpers/convertToCoin";
+import {convertCoin} from "../helpers/coinConversion";
 
 export const CoinsContext = createContext()
 

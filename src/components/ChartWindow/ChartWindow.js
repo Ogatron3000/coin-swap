@@ -5,6 +5,7 @@ import {getRatios} from "../../services/coins";
 import {useQuery} from "react-query";
 import Chart from "../Chart/Chart";
 import ChartMainInfo from "../ChartMainInfo/ChartMainInfo";
+import {divideDecimal, subtractDecimal} from "../../helpers/coinConversion";
 
 export default function ChartWindow({ isChartWindowOpen, toggleChartWindow }) {
     const [days, setDays] = useState(7)
@@ -19,7 +20,7 @@ export default function ChartWindow({ isChartWindowOpen, toggleChartWindow }) {
     let interval = days > 7 ? 'daily' : 'hourly'
     const {isLoading, data: ratiosArr} = useQuery(
         ['getRatios', baseCoin?.id, targetCoin?.id, days, interval],
-        () => getRatios(baseCoin?.id, targetCoin?.id, days, interval),
+        () => getRatios(baseCoin, targetCoin, days, interval),
         {refetchOnWindowFocus: false, enabled: !!(baseCoin && targetCoin)}
     )
 
@@ -55,8 +56,8 @@ export default function ChartWindow({ isChartWindowOpen, toggleChartWindow }) {
         setPrice(!swapped ? ratios[ratios.length - 1].baseToTarget : ratios[ratios.length - 1].targetToBase)
     }
 
-    let priceDiff = (chartData[chartData.length - 1].price - chartData[0].price).toFixed(3)
-    let priceDiffPercentage = (chartData[chartData.length - 1].price / chartData[0].price).toFixed(2)
+    let priceDiff = subtractDecimal(chartData[chartData.length - 1].price, chartData[0].price, 3)
+    let priceDiffPercentage = divideDecimal(chartData[chartData.length - 1].price, chartData[0].price, 2)
 
     let base, target
     if (swapped) {

@@ -9,7 +9,7 @@ export default function Chart({ isLoading, chartData, setPrice, setTime, priceDi
 
     function handleMouseMove({ activePayload }) {
         if (activePayload) {
-            setPrice(activePayload[0].payload.price.toFixed(3))
+            setPrice(activePayload[0].payload.price)
             setTime(convertToDateFormat(activePayload[0].payload.time))
         }
     }
