@@ -1,0 +1,19 @@
+.copyButtonWrapper {
+    position: relative;
+}
+
+.notification {
+    position: absolute;
+    padding: 4px 8px;
+    top: -20px;
+    right: -120px;
+    font-size: 0.75rem;
+    background-color: rgb(25, 19, 38);
+    color: white;
+    border-radius: 16px;
+    opacity: 0.6;
+}
+
+.copyButton > svg {
+    color: var(--pale-purple);
+}
