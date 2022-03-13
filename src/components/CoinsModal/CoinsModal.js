@@ -34,13 +34,19 @@ export default function CoinsModal({ isOpen, onClose, selectedCoinId }) {
                     <input
                         className={styles.search}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
                         type="text"
                         placeholder='Search name'
+                        autoFocus
                     />
                     <ul className={styles.ul}>
                         {coins.map(coin => {
-                            if (searchQuery.length > 0 && !coin.name.toLowerCase().includes(searchQuery)) return null
+                            if (searchQuery.length > 0 &&
+                                !coin.name.toLowerCase().includes(searchQuery) &&
+                                !coin.symbol.toLowerCase().includes(searchQuery)
+                            ) {
+                                return null
+                            }
                             return (
                                 <li
                                     className={styles.li}
