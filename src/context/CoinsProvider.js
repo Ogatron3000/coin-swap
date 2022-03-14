@@ -11,6 +11,7 @@ export default function CoinsProvider({ children }) {
         targetCoin: null,
         amount: '',
         amountInBaseCoin: true,
+        slippageTolerance: '0.5',
     })
 
     useEffect(() => {
