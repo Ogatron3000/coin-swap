@@ -16,10 +16,10 @@
     line-height: 1;
     transition: background-color 0.2s ease 0s, opacity 0.2s ease 0s;
     height: 32px;
-    padding-inline: 16px;
+    padding-inline: 15px;
     background-color: #eff4f5;
     color: var(--cyan);
-    margin-right: 6px;
+    margin-right: 4px;
 }
 
 .buttonActive {
@@ -32,11 +32,11 @@
     border-radius: 16px;
     background: #eeeaf4;
     border: 1px solid rgb(215, 202, 236);
-    width: 76px;
+    width: 64px;
     height: 32px;
     color: var(--dark-purple);
-    padding-inline: 16px;
-    margin-right: 6px;
+    padding-inline: 15px;
+    margin-right: 4px;
     font-size: 1rem;
 }
 
