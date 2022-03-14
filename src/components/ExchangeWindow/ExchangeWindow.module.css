@@ -1,14 +1,21 @@
 .wrapper {
+    min-width: 334px;
+    width: 334px;
+}
+
+.exchangeBackground {
     background: rgb(231, 227, 235) none repeat scroll 0% 0%;
+    width: 100%;
+    height: 426px;
     border-radius: 24px;
     padding: 1px 1px 3px;
 }
 
 .exchange {
     background: white;
-    width: 328px;
-    border-radius: 24px;
+    width: 100%;
     height: 100%;
+    border-radius: 24px;
 }
 
 .header {
@@ -29,7 +36,7 @@
 
 .h2 {
     flex-grow: 1;
-    margin: 0 0 0 64px;
+    margin: 0;
     font-size: 1.25rem;
     text-align: center;
     color: var(--dark-purple);
