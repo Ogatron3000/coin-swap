@@ -19,7 +19,7 @@
     padding: 0;
     overflow-y: auto;
     flex: 1;
-    margin: 24px -24px;
+    margin: 24px -24px 6px;
 }
 
 .li {
@@ -50,10 +50,4 @@
 
 .coinName > span:last-child {
     font-size: 0.875rem;
-}
-
-.manageTokens {
-    text-align: center;
-    color: var(--cyan);
-    font-weight: 600;
 }

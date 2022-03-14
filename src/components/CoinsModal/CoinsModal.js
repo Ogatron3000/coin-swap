@@ -55,7 +55,6 @@ export default function CoinsModal({ isOpen, onClose, selectedCoinId }) {
                     )
                 })}
             </ul>
-            <div className={styles.manageTokens}>Manage Tokens</div>
         </Modal>
     )
 }
