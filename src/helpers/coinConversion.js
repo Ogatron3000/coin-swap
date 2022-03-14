@@ -10,10 +10,6 @@ export function convertCoin(amount, baseCoin, targetCoin) {
     return convertedAmount.toFixed()
 }
 
-export function getConversionRate(baseCoin, targetCoin) {
-    return CustomDecimal(baseCoin.current_price).div(targetCoin.current_price).toNumber()
-}
-
 export function divideDecimal(a, b, decimals) {
     let val = CustomDecimal(a).div(b)
     if (decimals) {
