@@ -1,5 +1,5 @@
 .h3 {
-    margin: 0 0 16px 0;
+    margin: 0;
     font-size: 1rem;
     font-weight: 400;
 }
@@ -7,6 +7,7 @@
 .row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .button {
@@ -16,10 +17,11 @@
     line-height: 1;
     transition: background-color 0.2s ease 0s, opacity 0.2s ease 0s;
     height: 32px;
-    padding-inline: 15px;
+    padding-inline: 16px;
     background-color: #eff4f5;
     color: var(--cyan);
-    margin-right: 4px;
+    margin-right: 6px;
+    margin-top: 16px;
 }
 
 .buttonActive {
@@ -32,12 +34,13 @@
     border-radius: 16px;
     background: #eeeaf4;
     border: 1px solid rgb(215, 202, 236);
-    width: 64px;
+    width: 76px;
     height: 32px;
     color: var(--dark-purple);
-    padding-inline: 15px;
-    margin-right: 4px;
+    padding-inline: 16px;
+    margin-right: 6px;
     font-size: 1rem;
+    margin-top: 16px;
 }
 
 .input:focus {
